@@ -1,0 +1,58 @@
+//Varianta 3 rezolvata in Java
+
+public class CountDownLatchTest {
+
+    public static void main(String[] args) {
+        CountDownLatch first = new CountDownLatch(1);
+        CountDownLatch prev = first;
+        for (int i = 6; i > 0; i--) {
+            CountDownLatch next = new CountDownLatch(1);
+            new TestThread(prev, next, i).start();
+            prev = next;
+        }
+        first.countDown();
+
+    }
+
+    public static class TestThread extends Thread {
+
+        private CountDownLatch prev;
+        private CountDownLatch next;
+        private int id;
+
+        public TestThread(CountDownLatch prev, CountDownLatch next, int id) {
+            this.prev = prev;
+            this.next = next;
+            this.id = id;
+        }
+
+        public void run() {
+            if (prev != null) {
+                try {
+                    prev.await();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            try {
+                doWork();
+            } finally {
+                if (next != null) {
+                    next.countDown();
+                }
+            }
+        }
+
+        public void doWork() {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            System.out.println("Work done in Thread : "
+                    + id);
+        }
+    }
+} 
